@@ -431,6 +431,11 @@ fix_pvr.sh() {
 	fn_fetch_module
 }
 
+fix_pz.sh() {
+	modulefile="${FUNCNAME[0]}"
+	fn_fetch_module
+}
+
 fix_ro.sh() {
 	modulefile="${FUNCNAME[0]}"
 	fn_fetch_module
