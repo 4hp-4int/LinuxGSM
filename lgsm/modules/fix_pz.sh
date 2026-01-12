@@ -157,7 +157,7 @@ if [ -d "${localmodsdir}" ]; then
 				fn_script_log_info "Syncing mod ${modname}: ${moddir} -> ${destdir}"
 
 				if command -v rsync &> /dev/null; then
-					syncoutput=$(rsync -av --delete "${moddir}" "${destdir}/" 2>&1)
+					syncoutput=$(rsync -av --no-group --delete "${moddir}" "${destdir}/" 2>&1)
 					result=$?
 					if [ "${result}" -ne 0 ]; then
 						fn_script_log_error "rsync failed for ${modname}: ${syncoutput}"
