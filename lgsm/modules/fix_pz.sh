@@ -65,24 +65,31 @@ else
 	sandboxcfg=""
 fi
 
-# Only sync if a canonical sandbox config exists
+# Only sync if a canonical sandbox config exists AND destination doesn't already exist
+# This prevents overwriting server-generated SandboxVars with potentially stale config
+sandboxdest="${servercfgdir}/${selfname}_SandboxVars.lua"
+
 if [ -n "${sandboxcfg}" ] && [ -f "${sandboxcfg}" ]; then
 	# Ensure destination directory exists
 	if [ ! -d "${servercfgdir}" ]; then
 		mkdir -p "${servercfgdir}"
 	fi
 
-	# Always overwrite the destination sandbox config
-	fixname="SandboxVars sync"
-	fn_fix_msg_start
-	cp -f "${sandboxcfg}" "${servercfgdir}/${selfname}_SandboxVars.lua"
-	exitcode=$?
-	fn_fix_msg_end
+	# Only sync if destination doesn't exist (don't overwrite existing)
+	if [ ! -f "${sandboxdest}" ]; then
+		fixname="SandboxVars sync"
+		fn_fix_msg_start
+		cp -f "${sandboxcfg}" "${sandboxdest}"
+		exitcode=$?
+		fn_fix_msg_end
 
-	if [ "${exitcode}" -eq 0 ]; then
-		fn_script_log_info "Synced SandboxVars from ${sandboxcfg} to ${servercfgdir}/${selfname}_SandboxVars.lua"
+		if [ "${exitcode}" -eq 0 ]; then
+			fn_script_log_info "Synced SandboxVars from ${sandboxcfg} to ${sandboxdest}"
+		else
+			fn_script_log_error "Failed to sync SandboxVars from ${sandboxcfg} to ${sandboxdest}"
+		fi
 	else
-		fn_script_log_error "Failed to sync SandboxVars from ${sandboxcfg} to ${servercfgdir}/${selfname}_SandboxVars.lua"
+		fn_script_log_info "SandboxVars already exists at ${sandboxdest}, skipping sync"
 	fi
 fi
 
@@ -102,16 +109,28 @@ fi
 
 localmodsdir="${configdirserver}/mods"
 
+# Debug: log the paths being used
+fn_script_log_info "Local mods source: ${localmodsdir}"
+fn_script_log_info "Local mods destination: ${zomboidmodsdir}"
+
 if [ -d "${localmodsdir}" ]; then
+	fn_script_log_info "Local mods directory exists"
 	# Ensure destination directory exists
 	if [ ! -d "${zomboidmodsdir}" ]; then
+		fn_script_log_info "Creating destination directory: ${zomboidmodsdir}"
 		mkdir -p "${zomboidmodsdir}"
+		if [ $? -ne 0 ]; then
+			fn_script_log_error "Failed to create destination directory: ${zomboidmodsdir}"
+		fi
 	fi
 
 	# Count mods to sync
-	modcount=$(find "${localmodsdir}" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l)
+	modcount=$(find "${localmodsdir}" -maxdepth 1 -mindepth 1 -type d 2>&1 | grep -v "Permission denied" | wc -l)
+	fn_script_log_info "Found ${modcount} mod directories in ${localmodsdir}"
 
 	if [ "${modcount}" -gt 0 ]; then
+		# List what we found
+		fn_script_log_info "Mods found: $(ls -1 "${localmodsdir}" 2>&1)"
 		fixname="local mods sync (${modcount} mods)"
 		fn_fix_msg_start
 
@@ -134,21 +153,30 @@ if [ -d "${localmodsdir}" ]; then
 				fi
 
 				# Sync the mod directory (rsync for efficiency, fallback to cp)
+				destdir="${zomboidmodsdir}/${modname}"
+				fn_script_log_info "Syncing mod ${modname}: ${moddir} -> ${destdir}"
+
 				if command -v rsync &> /dev/null; then
-					rsync -a --delete "${moddir}" "${zomboidmodsdir}/${modname}/" 2>/dev/null
+					syncoutput=$(rsync -av --delete "${moddir}" "${destdir}/" 2>&1)
 					result=$?
+					if [ "${result}" -ne 0 ]; then
+						fn_script_log_error "rsync failed for ${modname}: ${syncoutput}"
+					fi
 				else
-					rm -rf "${zomboidmodsdir}/${modname}" 2>/dev/null
-					cp -r "${moddir}" "${zomboidmodsdir}/${modname}/"
+					rm -rf "${destdir}"
+					syncoutput=$(cp -rv "${moddir}" "${destdir}/" 2>&1)
 					result=$?
+					if [ "${result}" -ne 0 ]; then
+						fn_script_log_error "cp failed for ${modname}: ${syncoutput}"
+					fi
 				fi
 
 				if [ "${result}" -eq 0 ]; then
 					((synced++))
-					fn_script_log_info "Synced mod: ${modname} (ID: ${modid:-unknown})"
+					fn_script_log_info "Synced mod: ${modname} (ID: ${modid:-unknown}) to ${destdir}"
 				else
 					((failed++))
-					fn_script_log_error "Failed to sync mod: ${modname}"
+					fn_script_log_error "Failed to sync mod: ${modname} (exit code: ${result})"
 				fi
 			fi
 		done
@@ -166,5 +194,9 @@ if [ -d "${localmodsdir}" ]; then
 			modlist="${modlist%;}"
 			fn_script_log_info "Mod IDs for server.ini: Mods=${modlist}"
 		fi
+	else
+		fn_script_log_info "No mod directories found in ${localmodsdir}"
 	fi
+else
+	fn_script_log_info "Local mods directory does not exist: ${localmodsdir}"
 fi
