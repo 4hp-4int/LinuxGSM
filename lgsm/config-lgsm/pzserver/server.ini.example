@@ -1,0 +1,147 @@
+# Project Zomboid Server Configuration
+# Copy this to server.ini (or pzserver.ini for instance-specific)
+# LinuxGSM will sync this to ~/Zomboid/Server/ before server start
+
+# =============================================================================
+# MODS CONFIGURATION
+# =============================================================================
+# For LOCAL mods (not from Workshop), only use Mods= line
+# WorkshopItems= is only needed for Steam Workshop mods
+
+# Local mods (deployed via deploy-mods.sh)
+Mods=VorpallySauced;SauceTrapping
+
+# If you also use Workshop mods, add them here:
+# WorkshopItems=123456789;987654321
+
+# =============================================================================
+# SERVER SETTINGS
+# =============================================================================
+Public=false
+PublicName=My PZ Server
+PublicDescription=A Project Zomboid Server
+
+MaxPlayers=16
+PingLimit=400
+
+Open=true
+AutoCreateUserInWhiteList=false
+DropOffWhiteListAfterDeath=false
+DisplayUserName=true
+
+SpawnPoint=0,0,0
+SafetySystem=true
+ShowSafety=true
+SafetyToggleTimer=2
+SafetyCooldownTimer=3
+
+SpawnItems=
+
+DefaultPort=16261
+UDPPort=16262
+
+ResetID=0
+Map=Muldraugh, KY
+
+SaveWorldEveryMinutes=0
+
+Pause=false
+GlobalChat=true
+ChatStreams=s,r,a,w,y,sh,f,all
+
+ServerWelcomeMessage=Welcome to the server! <LINE> Read the rules in the welcome area.
+
+LogLocalChat=false
+
+ServerPlayerID=
+
+AnnounceDeath=false
+
+MinutesPerPage=1.0
+
+HoursForLootRespawn=0
+MaxItemsForLootRespawn=4
+ConstructionPreventsLootRespawn=true
+
+Blood=3
+BloodDecals=0
+
+# Deny clients with mismatched mods
+DoLuaChecksum=true
+
+# Voice settings
+VoiceEnable=true
+VoiceMinDistance=10.0
+VoiceMaxDistance=100.0
+Voice3D=true
+
+# Speed settings
+SpeedLimit=150.0
+PlayerSafehouse=false
+AdminSafehouse=false
+SafehouseAllowTrepass=true
+SafehouseAllowFire=true
+SafehouseAllowLoot=true
+SafehouseAllowRespawn=false
+SafehouseDaySurvivedToClaim=0
+SafeHouseRemovalTime=144
+
+AllowDestructionBySledgehammer=true
+SledgehammerOnlyInSafehouse=false
+
+# Faction settings
+Faction=true
+FactionDaySurvivedToCreate=0
+FactionPlayersRequiredForTag=1
+
+# PVP
+PVP=true
+PVPMeleeDamageModifier=0.5
+PVPFirearmDamageModifier=0.5
+PVPMeleeWhileHitReaction=false
+
+# Steam settings
+SteamPort1=8766
+SteamPort2=8767
+
+# Backups
+BackupsCount=8
+BackupsOnStart=true
+BackupsOnVersionChange=true
+BackupsPeriod=0
+
+# Anti-cheat
+AntiCheatProtectionType1=true
+AntiCheatProtectionType2=true
+AntiCheatProtectionType3=true
+AntiCheatProtectionType4=true
+AntiCheatProtectionType5=true
+AntiCheatProtectionType6=true
+AntiCheatProtectionType7=true
+AntiCheatProtectionType8=true
+AntiCheatProtectionType9=true
+AntiCheatProtectionType10=true
+AntiCheatProtectionType11=true
+AntiCheatProtectionType12=true
+AntiCheatProtectionType13=true
+AntiCheatProtectionType14=true
+AntiCheatProtectionType15=true
+AntiCheatProtectionType16=true
+AntiCheatProtectionType17=true
+AntiCheatProtectionType18=true
+AntiCheatProtectionType19=true
+AntiCheatProtectionType20=true
+AntiCheatProtectionType21=true
+AntiCheatProtectionType22=true
+AntiCheatProtectionType23=true
+AntiCheatProtectionType24=true
+
+DisableRadioStaff=false
+DisableRadioAdmin=true
+DisableRadioGM=true
+DisableRadioOverseer=false
+DisableRadioModerator=false
+DisableRadioInvisible=true
+
+# Server mods can have their own SandboxVars in their mod.info
+# or use the global SandboxVars.lua
