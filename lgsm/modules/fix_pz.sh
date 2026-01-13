@@ -152,23 +152,15 @@ if [ -d "${localmodsdir}" ]; then
 					fi
 				fi
 
-				# Sync the mod directory (rsync for efficiency, fallback to cp)
+				# Copy the mod directory (local-to-local, no need for rsync)
 				destdir="${zomboidmodsdir}/${modname}"
 				fn_script_log_info "Syncing mod ${modname}: ${moddir} -> ${destdir}"
 
-				if command -v rsync &> /dev/null; then
-					syncoutput=$(rsync -av --no-group --delete "${moddir}" "${destdir}/" 2>&1)
-					result=$?
-					if [ "${result}" -ne 0 ]; then
-						fn_script_log_error "rsync failed for ${modname}: ${syncoutput}"
-					fi
-				else
-					rm -rf "${destdir}"
-					syncoutput=$(cp -rv "${moddir}" "${destdir}/" 2>&1)
-					result=$?
-					if [ "${result}" -ne 0 ]; then
-						fn_script_log_error "cp failed for ${modname}: ${syncoutput}"
-					fi
+				rm -rf "${destdir}"
+				syncoutput=$(cp -r "${moddir}" "${destdir}" 2>&1)
+				result=$?
+				if [ "${result}" -ne 0 ]; then
+					fn_script_log_error "cp failed for ${modname}: ${syncoutput}"
 				fi
 
 				if [ "${result}" -eq 0 ]; then
